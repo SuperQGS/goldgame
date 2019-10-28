@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+    <!--Force Engine v1.0 by qgsoftware.net-->
+    <meta charset="utf-8"/>
+    <style>
+        * {
+            text-align: center;
+            background-color: #000033;
+        }
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -o-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: pixelated;
+            height: 97vh;
+        }
+        #images {
+            display: none;
+        }
+    </style>
+    <body>
+        <canvas id='game'></canvas>
+        <div id="images">
+            <!--PASTE IMAGE TAGS UNDER HERE-->
+            <img src=images/devtex/dev1.bmp id=dev1>
+            <img src=images/devtex/dev2.bmp id=dev2>
+            <img src=images/devtex/white.bmp id=white>
+            <img src=images/devtex/blue.bmp id=blue>
+            <img src=images/devtex/logo.bmp id=logo>
+            <img src=images/devtex/qgs2.bmp id=qgs2>
+            <img src=images/devtex/green.bmp id=green>
+            <img src=images/devtex/red.bmp id=red>
+            <img src=images/devtex/pink.bmp id=pink>
+            <img src="images/devtex/dev_player.bmp" id=dev_player>
+            <!---->
+        </div>
+        <script>
+            //config
+            var canvas_name = "game";
+            var texture_dimensions = 16;
+            var grid_height = 160;
+            var grid_width = 160;
+                        
+            //get canvas info
+            var canvas = document.getElementById(canvas_name);
+            var ctx = canvas.getContext("2d");
+            ctx.translate(canvas.width / 2,canvas.height / 2);
+            document.getElementById(canvas_name).width = grid_width;
+            document.getElementById(canvas_name).height = grid_height;
+            
+            //camera
+            var camera = {x:0, y:0};
+            
+            //tiles
+            var tiles = [[]];
+            
+            //------functions-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            
+            
+            
+            
+            //TICK FUNCTION
+            var start_tick = 0;
+            var tick = 1;
+            function real_time_tick() {
+                if (start_tick == 0) {
+                    start_tick = Date.now();
+                }
+                tick = Date.now() - start_tick;
+            }
+            
+            
+            
+            
+            function executer(func, ticks, multiplier) {
+                var second_tick = tick - multiplier;
+                while (second_tick > ticks) {
+                    second_tick = second_tick - ticks;
+                    multiplier = tick;
+                    func(multiplier);
+                }
+            }
+            
+            
+            
+            
+            //RENDER FUNCTION
+            var change_tile;
+            function render() {
+                //render tiles
+                
+                var layer;
+                var tile;
+                for (layer = 0; layer < tiles.length; layer++) {
+                    if (tiles[layer].vis) {
+                        for (tile = 0; tile < tiles[layer].length; tile++) {
+                            change_tile = tiles[layer][tile];
+                            adjust();
+                        }
+                        
+                    }
+                }
+            }
+            
+            
+            
+            
+            //ADJUST FUNCTION
+            //NOTE: attributes of each tile are
+            //x:
+            //y:
+            //type:
+            //image:
+            //image_string:
+            //attributes.xyz:
+            function adjust() {
+                //your code goes here
+                
+                
+                
+                
+                //this is the line that finally renders the tile
+                ctx.drawImage(change_tile.image, change_tile.x + grid_width/2 - camera.x, change_tile.y + grid_height/2 - camera.y);
+            }
+            
+            
+            
+            
+            //CYCLE FUNCTION
+            window.setInterval(function(){ cycle(); }, 0);
+            function cycle() {
+                //get tick
+                real_time_tick();
+                
+                //example
+                executer(execute2, 10000, execute2mult);
+                executer(execute, 1000, executemult);
+                
+                //render tiles
+                render();
+            }
+            
+            
+            
+            
+            //-----included extras-------------------------------------------------------------------------------------
+            
+            //BIND FUNCTION
+            window.addEventListener("keydown", downbinds, false);
+            window.addEventListener("keyup", upbinds, false);
+            function upbinds(u){binds(u,"")};
+            function downbinds(d){binds("",d)};
+            
+            function binds(u,d) {
+                //example
+                //W
+                if (u.keyCode == "87") {
+                    console.log("W off");
+                } else if (d.keyCode == "87") {
+                    console.log("W on");
+                }
+            
+            }
+            
+            
+            
+            
+            //COLLISION FUNCTION
+            function collision(tile1, tile2, xdir, ydir) {
+                //to make custom hitboxes, change texture_dimensions to some kind of .width
+                if (tile2.x < tile1.x + texture_dimensions + xdir && tile2.x + texture_dimensions > tile1.x + xdir && tile2.y < tile1.y + texture_dimensions + ydir && tile2.y + texture_dimensions > tile1.y + ydir) {
+                    alert("COLLLLLIDEEEE");
+                }
+            }
+            
+            
+            
+            
+            //LOAD MAP FUNCTION
+            function load_level(lvlstring) {
+                var head = document.getElementsByTagName('head')[0];
+                var script = document.createElement('script');
+                script.src = "maps/" + lvlstring + ".js";
+                script.id = lvlstring;
+                head.appendChild(script);
+            }
+            
+            //--------------homebrew-------------------------------------------------------------------------------
+            
+            //example
+            
+            var executemult = 0;
+            function execute(newmult) {
+                executemult = newmult;
+                
+                //console.log("yolo");
+            }
+            
+            var execute2mult = 0;
+            function execute2(newmult) {
+                execute2mult = newmult;
+                
+                //console.log("yolo2");
+            }
+            
+            var execute3mult = 0;
+            function execute3(newmult) {
+                execute3mult = newmult;
+                
+                //console.log("yolo3");
+            }
+            
+            load_level("clipping_test");
+            
+        </script>
+    </body>
+</html>

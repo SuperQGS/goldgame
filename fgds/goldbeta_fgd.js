@@ -1,0 +1,1 @@
+type_array = ["background","clipping","player"]; sub_array = []; load_fgd_2();

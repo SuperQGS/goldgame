@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>CARTOGRAPHER MAP EDITOR</title>
+        <link rel="shortcut icon"  href="devtex/qgs1.bmp">
+        <style>
+            
+            #hotbar {
+                width: 100%;
+                border-bottom: 1px solid black;
+                
+            }
+            
+            #leftbar {
+                width: 13%;
+                height: 93vh;
+                float: left;
+                border-top: 1px solid black;
+            }
+            
+            #workspace {
+                border-right: 1px solid black;
+                width: 74%;
+                height: 93vh;
+                float: left;
+                overflow: scroll;
+                background-color: lightslategray;
+            }
+            
+            #sidelist {
+                height: 93vh;
+                
+            }
+            
+            canvas {
+                border: 1px solid black;
+                background-color: white;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -o-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: pixelated;
+            }
+            
+            #sidebyside {
+                display: flex;
+            }
+            
+            #create {
+                flex: 0 0 33.333%;
+            }
+            
+            #canvas {
+                flex: 0 0 33.333%;
+            }
+            
+            #exist {
+                overflow: auto;
+                height: 100%
+            }
+            
+            #library {
+                overflow: auto;
+                width: 97%;
+                height: 20vh;
+                border: 1px solid black;
+            }
+            
+            #images {
+                height: 13%;
+                width: 100%;
+                overflow: scroll;
+                border: 1px solid black;
+            }
+            
+            .tile {
+                border: 1px solid black;
+            }
+            
+            #selected_image {
+                width: 90%;
+            }
+            
+            .library_imgs {
+                float: left;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="all">
+            <div id="hotbar">
+                <button onclick="save_data()">Save</button>
+                <button onclick="load_data()">Load</button>
+                <!--!!!button onclick="convert_data()">Convert</button>
+                <button onclick="output()">Game</button-->
+                <button onclick="jsfile()">Compile</button>
+                
+                |
+                
+                <button onclick="load_assets()">WAD</button>
+                <button onclick="load_fgd()">FGD</button>
+                
+                |
+                
+                Map Name: <input id="canvas_name">
+                Tile Resolution: <input id="texture_dimensions" size="1">
+                Grid Height: <input id="exgridheight" size="1">
+                Grid Width: <input id="exgridwidth" size="1">
+                Scale: <input id="exgridscale" size="1">
+                <button onclick="fgrid()">Toggle Grid</button>
+                
+            </div>
+            <div id="leftbar">
+                    Selected Layer:<select id="layerlist"><option>0</option></select><button onclick=add_layer()>+</button><br>
+                    <div id="hideshow"><button onclick="hide_layer()">Hide Layer</button>(currently shown)</div>
+                <hr>
+                Tool:<select id="tool">
+                    <option>Place Tile To Grid</option>
+                    <option>Fill Area With Tile</option>
+                    <option>Select</option>
+                    <option>Select Group</option>
+                    <option>Place Tile To Pixel</option>
+                    <option>Get Grid Coordinates</option>
+                    <option>Get Pixel Coordinates</option>
+                    <option>Delete</option>
+                    <option>Delete Area</option>
+                    <option>Get Tile Num</option>
+                </select><br>
+                
+                <hr>
+                Image:<select id="image"></select><br>
+                Library:
+                <div id="library"></div>
+                <hr>
+                Type:<select id="type" onclick="subtype_board()"></select><br>
+                
+                <table id="subtypeboard">
+                </table>
+                <hr>
+                <div id="selected_tile_div">
+                    <strong>No Tile Selected</strong><br>
+                </div>
+                <hr>
+                
+                
+            </div>
+            <div id="workspace">
+                <canvas id="example"></canvas>
+            </div>
+            <div id="sidelist">
+                <div id="exist">
+                    
+                    Tiles:
+                    <div class="tile">Tile Name Image Coordinates Delete</div>
+                    <div id="selected_group_div">
+                        <strong>No Group Selected</strong><br>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <script>
+            //catographer v 1.0
+            //engine by SuperQGS @ qgoftware.net
+            
+            //_____TILES_____
+            
+            //000tiles
+            var tiles = [[]]
+            
+            tiles[0].vis = true;
+            
+            var selected_layer = 0;
+            
+            
+            //_____RENDER_____
+            
+            //000draw canvas
+            var exgrid_width = 1;
+            var exgrid_height = 1
+            var exgrid_scale = 100
+            window.setInterval(function(){ drawcanvas(); }, 1);
+            function drawcanvas() {
+                //draw example canvas
+                document.getElementById("example").width = exgrid_width;
+                document.getElementById("example").height = exgrid_height;
+                //scale depending on wvh
+                document.getElementById("example").style.height = exgrid_scale + "px";
+                //get  2d context stuff
+                var c = document.getElementById("example");
+                var ctx = c.getContext("2d");
+                //translate 0,0 to center of screen
+                //y is still flipped but oh well
+                ctx.translate(c.width / 2,c.height / 2);
+                
+                //render tiles
+                var change_tile;
+                var num_of_tiles = tiles.length - 1;
+                
+                var layer;
+                var tile;
+                for (layer = 0; layer < tiles.length; layer++) {
+                    if (tiles[layer].vis) {
+                        num_of_tiles = tiles[layer].length;
+                        for (tile = 0; tile < num_of_tiles; tile++) {
+                            change_tile = tiles[layer][tile];
+                            ctx.drawImage(change_tile.image, change_tile.x, change_tile.y);
+                        }
+                        
+                    }
+                }
+                
+                
+                
+                
+                //unused render optomized
+//                var ff;
+//                for (ff = 0; ff < num_of_tiles; ff++) {
+//                    change_tile = tiles[selected_layer][ff];
+//                        if (tiles[selected_layer].vis) {
+//                            ctx.drawImage(change_tile.image, change_tile.x, change_tile.y);
+//                        }
+//                }
+                
+                //grid and gamebox
+                //grid
+                if (grid == true) {
+                    var gridlinex = 0 - (exgrid_width/2);
+                    while (gridlinex < exgrid_width/2) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = "black";
+                        ctx.moveTo(gridlinex * texture_dimensions,0 - exgrid_height);
+                        ctx.lineTo(gridlinex * texture_dimensions,exgrid_height);
+                        ctx.stroke();
+                        gridlinex = gridlinex + 1;
+                    }
+                    var gridliney = 0 - (exgrid_height / 2);
+                    while (gridliney < exgrid_height / 2) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = "black";
+                        ctx.moveTo(0 - exgrid_width,gridliney * texture_dimensions);
+                        ctx.lineTo(exgrid_width,gridliney * texture_dimensions);
+                        ctx.stroke();
+                        gridliney = gridliney + 1;
+                    }
+                }
+                //gamebox
+                if (gamebox == true) {
+                    ctx.rect(0 - (grid_width / 2 ),0 + (grid_height / 2),0 + grid_width,0 - grid_height);
+                    ctx.strokeStyle = "blue";
+                    ctx.stroke(); ctx.stroke();
+                }
+                //hide layer button
+                if (tiles[selected_layer].vis && document.getElementById("hideshow").innerHTML !== '<button onclick="hide_layer()">Hide Layer</button>(currently shown)') {
+                    document.getElementById("hideshow").innerHTML = '<button onclick="hide_layer()">Hide Layer</button>(currently shown)';
+                } else if (!tiles[selected_layer].vis && document.getElementById("hideshow").innerHTML !== '<button onclick="show_layer()">Show Layer</button>(currently hidden)') {
+                    document.getElementById("hideshow").innerHTML = '<button onclick="show_layer()">Show Layer</button>(currently hidden)';
+                }
+            }
+            
+            //000existing tiles list
+            var exist_list = [];
+            var exist_num = tiles[selected_layer].length - 1;
+            var exist_list_html = "";
+            //existing_tiles();
+            function existing_tiles() {
+                exist_num = 0;
+                while (exist_num < tiles[selected_layer].length) {
+                    //console.log(tiles[exist_num]);
+                    var exist_name = tiles[selected_layer][exist_num].type;
+                    var exist_x = tiles[selected_layer][exist_num].x;
+                    var exist_y = tiles[selected_layer][exist_num].y;
+                    var exist_img = tiles[selected_layer][exist_num].image_string;
+                    
+                    exist_list[exist_num] = '<div class="tile">' + exist_num + ' ' + exist_name + " " + exist_img + ' (' + exist_x + ',' + exist_y + ') <button onclick=\"delete_tile(' + exist_num +  ')\">Delete</button></div>';
+                    
+                    var compile_list = 0;
+                    var compiled_exist_list = "";
+                    while (compile_list < exist_list.length) {
+                        compiled_exist_list = compiled_exist_list + exist_list[compile_list];
+                        compile_list = compile_list + 1;
+                    }
+                    
+                    exist_list_html = compiled_exist_list;
+                    exist_num = exist_num + 1;
+                }
+                
+                document.getElementById("exist").innerHTML = '<h3>Layers</h3>Selected Layer:<select></select><button>+</button><br>[]Show Layer<br>Tiles:<div class="tile">Tile Name Image Coordinates Delete</div>' + exist_list_html;
+                drawcanvas();
+            }
+            
+            
+            
+            
+            //_____LAYERS_____
+            
+            //000add layer
+            var layer_ammount = 0;
+            function add_layer() {
+                tiles[tiles.length] = [];
+                
+                layer_ammount++
+                document.getElementById("layerlist").innerHTML = document.getElementById("layerlist").innerHTML + "<option>" + layer_ammount + "</option>";
+                tiles[layer_ammount].vis = true;
+            }
+            
+            //000layer loop
+            window.setInterval(function(){ layer_loop(); }, 0);
+            function layer_loop() {
+                selected_layer = document.getElementById("layerlist").value;
+            }
+            
+            //000hide layer
+            function hide_layer() {
+                tiles[selected_layer].vis = false;
+            }
+            
+            //000show layer
+            function show_layer() {
+                tiles[selected_layer].vis = true;
+            }
+            
+            
+            
+            
+            //_____TOOLS_____
+            
+            //000canvas info !!!
+            var canvas = document.getElementById("example");
+            var ctx = canvas.getContext("2d");
+            
+            //000get selected tool
+            canvas.addEventListener("click", function (evt) {
+                var tool = document.getElementById("tool").value;
+                if (tool == "Place Tile To Grid") {
+                    place_tile_mouse(canvas, evt);
+                    drawcanvas();
+                }
+                if (tool == "Fill Area With Tile") {
+                    fill_tile_area(canvas, evt);
+                }
+                if (tool == "Fill Area With Tile [1/2]") {
+                    fill_tile_area_two(canvas, evt);
+                    drawcanvas();
+                }
+                if (tool == "Select") {
+                    select(canvas, evt);
+                }
+                if (tool == "Select Group") {
+                    add_to_group(canvas, evt);
+                }
+                if (tool == "Place Tile To Pixel") {
+                    place_specific_coords();
+                }
+                if (tool == "Get Grid Coordinates") {
+                    get_grid_coordinates(canvas,evt);
+                }
+                if (tool == "Get Pixel Coordinates") {
+                    get_pixel_coordinates(canvas, evt);
+                }
+                if (tool == "Delete") {
+                    delete_tool(canvas, evt);
+                }
+                if (tool == "Delete Area") {
+                    delete_tile_area(canvas, evt)
+                }
+                if (tool == "Delete Area [1/2]") {
+                    delete_tile_area_two(canvas, evt)
+                }
+                if (tool == "Get Tile Num") {
+                    get_tile_grid_num(canvas, evt);
+                }
+            }, false);
+            
+            //000delete
+            function delete_tool(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                var click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                var tile = get_tile_grid_num(click_x, click_y);
+                if (tile != undefined) {
+                    tiles[selected_layer].splice(tile, 1);
+                }
+                
+            }
+            
+            //000place tile
+            function place_tile_mouse(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                
+                var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                var click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                var place_specific_type = document.getElementById("type").value;
+                var place_specific_image = eval(document.getElementById("image").value);
+                var place_specific_image_string = document.getElementById("image").value;
+                //var place_specific_image =
+                if (place_specific_type == "No Tile Selected" || place_specific_type == "") {
+                    alert("No Tile Selected");
+                } else {
+                    
+                    var attributes = get_attributes();
+                    
+                    tiles[selected_layer][tiles[selected_layer].length] = {x:click_x, y:click_y, type:place_specific_type, image:place_specific_image, image_string:place_specific_image_string, attributes:attributes};
+                    //existing_tiles();
+                }
+            }
+            
+            //!!!
+            function get_tile_grid_num(x, y) {
+                for (i = 0; i < tiles[selected_layer].length; i++) {
+                    if (tiles[selected_layer][i].x == x && tiles[selected_layer][i].y == y) {
+                        return i;
+                    }
+                }
+            }
+            
+            //000place @ pixel
+            function place_specific_coords() {
+                var place_specific_x = prompt("X:");
+                var place_specific_y = prompt("Y:");
+                var place_specific_type = document.getElementById("type").value;
+                var place_specific_image = eval(document.getElementById("image").value);
+                var place_specific_image_string = document.getElementById("image").value;
+                //var place_specific_image =
+                if (place_specific_type == "No Tile Selected" || place_specific_type == "") {
+                    alert("No Tile Selected");
+                } else {
+                    tiles[selected_layer][tiles[selected_layer].length] = {x:place_specific_x, y:place_specific_y, type:place_specific_type, image:place_specific_image, image_string:place_specific_image_string};
+                    //existing_tiles();
+                }
+                
+            }
+            
+            //000get coords
+            function get_grid_coordinates(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                
+                var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                var click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                alert(click_x + "," + click_y);
+            }
+            
+            //000get pixel coords
+            function get_pixel_coordinates(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                //this probably doesn't work but it's not used much and I don't really care
+                var click_x = Math.floor((evt.clientX - rect.left)) - exgrid_width/2;
+                var click_y = Math.floor((evt.clientY - rect.top)) - exgrid_height/2;
+                alert(click_x + "," + click_y);
+            }
+            
+            //000fill
+            var a_click_x;
+            var a_click_y;
+            var a_click2_x;
+            var a_click2_y
+            function fill_tile_area(canvas, evt) {
+                //damage control
+                document.getElementById("tool").innerHTML = "<option>Fill Area With Tile [1/2]</option>";
+                
+                //get coords junk
+                var rect = canvas.getBoundingClientRect();
+                
+                a_click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                a_click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                
+            }
+            function fill_tile_area_two(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                
+                a_click2_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                a_click2_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                var place_specific_type = document.getElementById("type").value;
+                var place_specific_image = eval(document.getElementById("image").value);
+                var place_specific_image_string = document.getElementById("image").value;
+                
+                if (place_specific_type == "No Tile Selected" || place_specific_type == "") {
+                    alert("No Tile Selected");
+                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").value = "Fill Area With Tile";
+                } else if (a_click_x > a_click2_x || a_click_y > a_click2_y) {
+                    alert("Invalid use of tool. Please fill from top left to bottom right.");
+                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").value = "Fill Area With Tile";
+                } else {
+                    var area_loop_x = 0;
+                    var area_loop_y = 0;
+                    
+                    while (a_click_y + (texture_dimensions * area_loop_y) <= a_click2_y) {
+                        while (a_click_x + (texture_dimensions * area_loop_x) <= a_click2_x) {
+                            tiles[selected_layer][tiles[selected_layer].length] = {x:a_click_x + (texture_dimensions * area_loop_x), y:a_click_y + (texture_dimensions * area_loop_y), type:place_specific_type, image:place_specific_image, image_string:place_specific_image_string};
+                            //nooexisting_tiles();
+                            area_loop_x = area_loop_x + 1;
+                        }
+                        area_loop_x = 0;
+                        area_loop_y = area_loop_y + 1;
+                    }
+                    //existing_tiles();
+                    
+                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").value = "Fill Area With Tile";
+                }
+            }
+            
+            
+            //000deletefill
+            var d_click_x;
+            var d_click_y;
+            var d_click2_x;
+            var d_click2_y
+            function delete_tile_area(canvas, evt) {
+                //damage control
+                document.getElementById("tool").innerHTML = "<option>Delete Area [1/2]</option>";
+                
+                //get coords junk
+                var rect = canvas.getBoundingClientRect();
+                
+                d_click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                d_click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+            }
+            function delete_tile_area_two(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                
+                d_click2_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                d_click2_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                if (d_click_x > d_click2_x || d_click_y > d_click2_y) {
+                    alert("Invalid use of tool. Please fill from top left to bottom right.");
+                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").value = "Delete Area";
+                } else {
+                    var area_loop_x = 0;
+                    var area_loop_y = 0;
+                    
+                    while (d_click_y + (texture_dimensions * area_loop_y) <= d_click2_y) {
+                        while (d_click_x + (texture_dimensions * area_loop_x) <= d_click2_x) {
+                            var change_tile;
+                            var new_tile_num = 0;
+                            var num_of_tiles = tiles[selected_layer].length - 1;
+                            var tileloop = true;
+                            while (tileloop) {
+                                if (new_tile_num < num_of_tiles) {
+                                    change_tile = tiles[selected_layer][new_tile_num];
+                                    if (change_tile.x == d_click_x + (texture_dimensions * area_loop_x) && change_tile.y == d_click_y + (texture_dimensions * area_loop_y)) {
+                                        tiles[selected_layer].splice(new_tile_num, 1);
+                                        exist_list.splice(new_tile_num, 1);
+                                    }
+                                    new_tile_num = new_tile_num + 1;
+                                    } else {
+                                        tileloop = false;
+                                }
+                            }
+                            
+                            //noexisting_tiles();
+                            area_loop_x = area_loop_x + 1;
+                        }
+                        area_loop_x = 0;
+                        area_loop_y = area_loop_y + 1;
+                    }
+                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").value = "Delete Area";
+                }
+                var change_tile;
+                var new_tile_num = 0;
+                var num_of_tiles = tiles[selected_layer].length - 1;
+                var tileloop = true;
+                while (tileloop) {
+                    if (new_tile_num <= num_of_tiles) {
+                        change_tile = tiles[selected_layer][new_tile_num];
+                        if (change_tile.x == d_click2_x && change_tile.y == d_click2_y) {
+                            tiles[selected_layer].splice(new_tile_num, 1);
+                            exist_list.splice(new_tile_num, 1);
+                        }
+                        new_tile_num = new_tile_num + 1;
+                    } else {
+                        tileloop = false;
+                    }
+                }
+                //existing_tiles();
+            }
+            
+            //!!!select
+            var selected_tile;
+            function select(canvas, evt) {
+                selected_tile = {};
+                var rect = canvas.getBoundingClientRect();
+                var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                var click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                var tile = get_tile_grid_num(click_x, click_y);
+                selected_tile = tiles[selected_layer][tile];
+                
+                if (selected_tile == undefined) {
+                    var select_string = "<strong>No Tile Selected</strong>";
+                    document.getElementById("selected_tile_div").innerHTML = select_string;
+                } else {
+                    var select_string = "<strong>tiles[" + selected_layer + "][" + tile + "]</strong><br>" +
+                    "image: <img src='" + selected_tile.image.src + "'> " + selected_tile.image.id + "<br>" +
+                    "type: " + selected_tile.type + "<br>" +
+                    "x: " + selected_tile.x + "<br>" +
+                    "y: " + selected_tile.y + "<br>" +
+                    "<div id='select_subs'></div><br>" +
+                    "<button onclick=move('w')>\<</button><button onclick=move('e')>\></button><button onclick=move('s')>v</button><button onclick=move('n')>^</button><br>" +
+                    "<button>edit</button><button>delete</button><button>copy</button>";
+                
+                
+                    document.getElementById("selected_tile_div").innerHTML = select_string;
+                
+                
+                    //-----
+                    var select_sub_list = "";
+                    var type_find = selected_tile.type;
+                    //find type
+                    for (i = 0; i < type_array.length; i++) {
+                        if (type_find == type_array[i]) {
+                        
+                            selected_type_subs = i;
+                        
+                            if (sub_array[i] != undefined) {
+                                //sort list
+                                var i;
+                                for (j = 0; j < sub_array[i].length; j++) {
+                    
+                                    select_sub_list = select_sub_list + "<tr><td>" + sub_array[i][j] + ": " + eval("selected_tile.attributes." + sub_array[i][j]) + "<br>";
+                                
+                                    
+                    
+
+                                }
+                            }
+                        }
+                    }
+                
+                    document.getElementById("select_subs").innerHTML = select_sub_list;
+                }
+            }
+            
+            //!!! select group
+            var group = []
+            function add_to_group(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
+                var click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
+                
+                var tile = get_tile_grid_num(click_x, click_y);
+                
+                if (tiles[selected_layer][tile] != undefined) {
+                    group[group.length] = tiles[selected_layer][tile]
+                    group[group.length - 1].layer = selected_layer;
+                    group[group.length - 1].tile = tile;
+                }
+
+                var grouplist = "";
+                for (i = 0; i < group.length; i++) {
+                    grouplist = grouplist + "tiles[" + group[i].layer + "][" + group[i].tile + "] - " + group[i].type + "," + group[i].image_string + "," + group[i].x + "," + group[i].y + "<br>"
+                }
+                
+                
+                var select_string = "<strong>Selected Group:</strong><br>" +
+                    grouplist +
+                    "<button onclick=move('aw')>\<</button><button onclick=move('ae')>\></button><button onclick=move('as')>v</button><button onclick=move('an')>^</button><br>" +
+                    "<button onclick='edit_group()'>edit</button><button>delete</button><button>copy</button><button onclick='alert(JSON.stringify(group))'>data</button><button onclick='group=[]'>deselect</button>";
+                
+                
+                    document.getElementById("selected_group_div").innerHTML = select_string;
+            }
+            
+            //!!!
+            function edit_group() {
+                for (i = 0; i < group.length; i++) {
+                    group[i].type = document.getElementById("type").value;
+                    group[i].image = eval(document.getElementById("image").value);
+                    group[i].image_string = document.getElementById("image").value;
+                    
+                }
+            }
+            //var place_specific_type = document.getElementById("type").value;
+            //var place_specific_image = eval(document.getElementById("image").value);
+            //var place_specific_image_string = document.getElementById("image").value;
+            
+            function move(movedir) {
+                if (movedir == "w") {
+                    selected_tile.x = selected_tile.x - parseInt(texture_dimensions);
+                }
+                if (movedir == "e") {
+                    selected_tile.x = selected_tile.x + parseInt(texture_dimensions);
+                }
+                if (movedir == "n") {
+                    selected_tile.y = selected_tile.y - parseInt(texture_dimensions);
+                }
+                if (movedir == "s") {
+                    selected_tile.y = selected_tile.y + parseInt(texture_dimensions);
+                }
+                
+                
+                if (movedir == "aw") {
+                    for (i = 0; i < group.length; i++) {
+                        group[i].x = group[i].x - parseInt(texture_dimensions);
+                    }
+                }
+                if (movedir == "ae") {
+                    for (i = 0; i < group.length; i++) {
+                        group[i].x = group[i].x + parseInt(texture_dimensions);
+                    }
+                }
+                if (movedir == "an") {
+                    for (i = 0; i < group.length; i++) {
+                        group[i].y = group[i].y - parseInt(texture_dimensions);
+                    }
+                }
+                if (movedir == "as") {
+                    for (i = 0; i < group.length; i++) {
+                        group[i].y = group[i].y + parseInt(texture_dimensions);
+                    }
+                }
+            }
+            
+            //        att1: 101<br>
+            //        att2: 102<br>
+            
+            //_____OPTIONS_____
+            
+            //000canvas variables
+            var canvas_name;
+            var texture_dimensions;
+            var grid_height;
+            var grid_width;
+            
+            //000workspace variables
+            var grid = true;
+            var gamebox = false;
+            var wvh_scale = "h";
+            var scale = 1;
+            
+            //000textbox and button values
+            window.setInterval(function(){ textboxes(); }, 0);
+            function textboxes() {
+                
+                //apply game canvas variables
+                canvas_name = document.getElementById("canvas_name").value;
+                texture_dimensions = document.getElementById("texture_dimensions").value;
+                //grid_height = document.getElementById("gridheight").value * texture_dimensions;
+                //grid_width = document.getElementById("gridwidth").value * texture_dimensions;
+                //apply example canvas variables
+                exgrid_height = document.getElementById("exgridheight").value * texture_dimensions;
+                exgrid_width = document.getElementById("exgridwidth").value * texture_dimensions;
+                //quick if else for wvh scale
+                var width_or_height;
+                if (wvh_scale == "w") {
+                    width_or_height = document.getElementById("exgridwidth").value;
+                } else {
+                    width_or_height = document.getElementById("exgridheight").value
+                }
+                exgrid_scale = document.getElementById("exgridscale").value * texture_dimensions * width_or_height;
+                scale = document.getElementById("exgridscale").value;
+            }
+            
+            //000toggle grid  
+            function fgrid() {
+                if (grid == true) {
+                    grid = false;
+                } else if (grid == false) {
+                    grid = true;
+                }
+            }
+            
+            //000toggle gamebox
+            function fgamebox() {
+                if (gamebox == true) {
+                    gamebox = false;
+                } else if (gamebox == false) {
+                    gamebox = true;
+                }
+            }
+            
+            //000toggle wh scale
+            function toggle_wh_scale() {
+                if (wvh_scale == "w") {
+                    wvh_scale = "h";
+                } else if (wvh_scale = "h") {
+                    wvh_scale = "w";
+                }
+            }
+            
+            //000load wad
+            var image_array;
+            function load_assets(directory) {
+                if (directory == "" || directory == null) {
+                    var temp_dir = prompt("Wad File Directory:");
+                    load_assets(temp_dir);
+                } else {
+                    
+                    
+                    //load js file yes!
+                    script = document.createElement("script");
+                    script.src = directory;
+                    //alert(script);
+                    document.body.appendChild(script);
+                    
+                    assets_directory = directory;
+                    
+                }
+            }
+            
+            //000load wad 2
+            function load_assets_2() {
+                //create list of images
+                var image_div = "";
+                for (i = 0; i < image_array.length; i++) {
+                    image_div = image_div + "<div class=library_imgs onclick=set_image(\'" + image_array[i] + "\')>" + image_array[i] + "<img src=" + dir_array[i] +  " id=" + image_array[i] + ">| </div>"
+                
+                }
+                document.getElementById("library").innerHTML = image_div;
+                
+                //create list of images
+                var i;
+                var select_tile_list = "";
+                for (i = 0; i < image_array.length; i++) {
+                    
+                    select_tile_list = select_tile_list + "<option>" + image_array[i] + "</option>";
+                }
+                document.getElementById("image").innerHTML = select_tile_list;
+            }
+            
+            //!!!
+            function set_image(name) {
+                document.getElementById("image").value = name;
+            }
+            
+            //000load fgd
+            var sub_array;
+            var type_array;
+            
+            
+            function load_fgd(directory) {
+                if (directory == "" || directory == null) {
+                    var temp_dir = prompt("Fgd File Directory:");
+                    load_fgd(temp_dir);
+                } else {
+                    
+                    
+                    //load js file yes!
+                    script = document.createElement("script");
+                    script.src = directory;
+                    //alert(script);
+                    document.body.appendChild(script);
+                    
+                    
+                }
+            }
+            
+            //000load fgd 2
+            function load_fgd_2() {
+                //create list of images
+                var i;
+                var select_tile_list = "";
+                for (i = 0; i < type_array.length; i++) {
+                    
+                    select_tile_list = select_tile_list + "<option>" + type_array[i] + "</option>";
+                }
+                document.getElementById("type").innerHTML = select_tile_list;
+                
+                subtype_board();
+            }
+            
+            //!!! create subtype board
+            var selected_type_subs;
+            function subtype_board() {
+                var select_sub_list = "<tr><th>Subtypes</th></tr>";
+                var type_find = document.getElementById("type").value;
+                //find type
+                for (i = 0; i < type_array.length; i++) {
+                    if (type_find == type_array[i]) {
+                        
+                        selected_type_subs = i;
+                        
+                        if (sub_array[i] != undefined) {
+                            //sort list
+                            var i;
+                            for (j = 0; j < sub_array[i].length; j++) {
+                    
+                                select_sub_list = select_sub_list + "<tr><td>" + sub_array[i][j] + ":</td><td><input id=\'" + sub_array[i][j] + "_att\'></td></tr>";
+                                
+                    
+
+                            }
+                        }
+                    }
+                }
+                
+                document.getElementById("subtypeboard").innerHTML = select_sub_list;
+            }
+            
+            //!!! get attributes
+            function get_attributes() {
+                
+                var full_att = {};
+                var att_string = "";
+                var sub;
+                var att;
+                
+                var type_find = document.getElementById("type").value;
+                //find type
+                for (i = 0; i < type_array.length; i++) {
+                    if (type_find == type_array[i]) {
+                        
+                        selected_type_subs = i;
+                        
+                        if (sub_array[i] != undefined) {
+                            //sort list
+                            var i;
+                            for (j = 0; j < sub_array[i].length; j++) {
+                                
+                                
+                                sub = document.getElementById(sub_array[i][j] + "_att").value;
+                                att = sub_array[i][j]
+                                
+                                eval("full_att." + att + "=" + "\'" + sub + "\'");
+
+                            }
+                        }
+                    }
+                }
+                
+                
+                //att = eval("{" + att_string + "}");
+                return full_att;
+            }
+            
+            //_____FILES_____
+            
+            //000save
+            function save_data() {
+                
+                get_tiles();
+                
+                var save_file = "function save_func(){ " + "tiles=[" + get_tile_list + "]; " + get_vis_list + " } save_func();";
+                
+                var file_name = prompt("Save As: (.js)");
+                download(file_name + ".js",save_file);
+            }
+            
+            //000load
+            function load_data(directory) {
+                if (directory == "" || directory == null) {
+                    var temp_dir = prompt("Save File Directory:");
+                    load_data(temp_dir);
+                    
+                } else {
+                    
+                    //load js file yes!
+                    script = document.createElement("script");
+                    script.src = directory;
+                    //alert(script);
+                    document.body.appendChild(script);
+                    
+                }
+            }
+            
+            //000map download
+            function jsfile() {
+                get_tiles();
+                
+                download(canvas_name + ".js","/*tiles*/var " + canvas_name + "=" + "[" + get_tile_list + "];/*settiles*/tiles=" + canvas_name + ";/*vislist:*/" + get_vis_list);
+            }
+            
+            //000compile
+            function output() {
+                var image_html_tags = document.getElementById("images").outerHTML;
+                get_tiles();
+                console.log("---COMPILED--------------------------" + "\n"
+                + "-HTML IMAGE TAGS:" + "\n"
+                + image_html_tags + "\n"
+                + "-HTML CANVAS TAG:" + "\n"
+                + "<canvas id=\'" + canvas_name + "\'></canvas>" + "\n"
+                + "-CANVAS VARIABLES:" + "\n"
+                
+                    + "var canvas_name = \"" + canvas_name + "\";"
+                    + " var texture_dimensions = " + texture_dimensions + ";"
+                    + " var grid_height = " + grid_height + ";"
+                    + " var grid_width = " + grid_width + ";" + "\n"
+                
+                + "-TILES:" + "\n"
+                + "var tiles = [" + get_tile_list + "];" + "\n"
+                + "-------------------------------------");
+                
+                alert("COMPILED: Data printed to console.");
+            }
+            
+            //000convert
+            function convert_data() {
+                var confirm_file = confirm("have you loaded an asset file?");
+                
+                if (confirm_file) {
+                    tiles = eval(prompt("TILE ARRAY:"));
+                
+                    //existing_tiles();
+                }
+            }
+            
+            //000get tiles
+            var get_tile_list = [];
+            var get_vis_list = "";
+            function get_tiles() {
+                for (j = 0; j < tiles.length; j++) {
+                    
+                    var get_single_list = [];
+                    for (i = 0; i < tiles[j].length; i++) {
+                        var get_name = tiles[j][i].type;
+                        var get_x = tiles[j][i].x;
+                        var get_y = tiles[j][i].y;
+                        var get_img = tiles[j][i].image_string;
+                        var get_attributes = JSON.stringify(tiles[j][i].attributes);
+                        
+                        get_single_list[i] = "{x:" + get_x + ", y:" + get_y + ", type:\'" + get_name + "\', image:" + get_img + ", image_string:\'" + get_img + "\', attributes:" + get_attributes + "}";
+                    }
+                    get_tile_list[j] = "[" + get_single_list + "]";
+                    
+                    if (tiles[j].vis) {
+                        get_vis_list = get_vis_list + "tiles[" + j + "].vis=true;"
+                    } else {
+                        get_vis_list = get_vis_list + "tiles[" + j + "].vis=false;"
+                    }
+                    
+                }
+            }
+            
+            
+            
+            
+            //_____MISC_____
+            
+            //000wasd
+            var scrollx = 0;
+            var scrolly = 0;
+            function wasdscroll() {
+                workspace.scrollTo(scrollx, scrolly);
+            }
+            
+            //000remove tile
+            function delete_tile(delete_num) {
+                tiles[selected_layer].splice(delete_num, 1);
+                exist_list.splice(delete_num, 1);
+                //existing_tiles();
+            }
+            
+            //000download
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            }
+            
+            
+            
+            
+            
+            //FORMATTING:
+            //_____DIRECTORY_____
+            //000section
+            
+            //DIRECTORY:
+            //tiles
+                //tiles
+            //render
+                //draw canvas
+                //existing tiles list
+            //layers
+                //add layer
+                //layer loop
+                //hide layer
+                //show layer
+            //tools
+                //canvas info
+                //get selected tool
+                //delete
+                //place tile
+                //place @ pixel
+                //get coordst
+                //get pixel coords
+                //fill
+                //deletefill
+            //typeimage
+                //idk yet
+            //options
+                //canvas variables
+                //workspace variables
+                //textbox and button values
+                //toggle grid
+                //toggle gamebox
+                //toggle wh scale
+                //load wad
+                //load wad 2
+                //load fgd
+                //load fgd 2
+            //files
+                //save
+                //load
+                //map download
+                //compile
+                //convert
+                //get tiles
+            //misc
+                //wasd
+                //remove tile
+                //download
+            
+            //TODO:
+            
+            //CRUCIAL FEATURES
+            //***rework game engine
+            
+            //FEATURES
+            //edit selected tile*(s) type, image, attributes
+            //copy/paste selected tile*(s)
+            //cafb todo
+            //layer names
+            //attribute value let be numerical
+            //fill select
+            
+            //IMPORTANT BUGS
+            //fix fill tool and delete tool, they bug the select tool, could fix with universal "tool tags" variable
+            
+            //BUGS
+            //fix deletearea
+            //when load, figure out layer list, make sure the array and dropdown work
+            //no way to delete off center tile
+            //fix selecting twice bug //future: for group select?
+            //update select display when things change
+            
+            //CLEAN CODE
+            //replace while loops with for loops
+            //documentation
+            //commend the code better and clean up inside the sections //do stuff like this too
+            //get rid of eval?
+            //some kind of security check
+            
+            //QOL
+            //Hotkeys
+            //undo redo etc
+            //dark mode
+            //compile list of tiles
+            //tool images
+            //save entered subtype values
+            //missingno
+            //error of two tiles have same coords
+            //hide all layers
+            //show all layers
+            //negative layers
+            //move layers
+            //save as schematic, to vmf
+            //delete from top
+            //save and load firefox (txt instead of js? to js? both?)
+            //config
+            
+            //TESTING
+            //test compile to new engine
+            //test saves and loads
+            //heavy testing
+            
+            //devtemp
+            load_assets("wads/devtex_wad.js");
+            load_fgd("fgds/test_fgd.js");
+        </script>
+        <div id="added_scripts"></div>
+    </body>
+</html>

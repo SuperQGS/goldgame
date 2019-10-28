@@ -1,0 +1,1 @@
+type_array = ["test1","test2","test3"]; sub_array = [["deva","devb","devc"],["dev2a","dev2b"],["gabe","newell"]]; load_fgd_2();

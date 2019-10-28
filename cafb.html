@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <style>
+            * {
+                text-align: center;
+            }
+            
+            #library {
+                height:30%;
+                width: 100%;
+                overflow: scroll;
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Cartographer Asset File Builder</h1>
+        <hr>
+        <h4>Image Assets:</h4>
+        <button onclick="download_images()">Save</button><button>Load</button><br>
+        Name | Source<br>
+        <select id="image"></select>-<button onclick="upload_image()">+</button><button onclick="delete_image()">-</button><br>
+        Library:<br>
+        <div id="library"></div>
+
+        <h4>Type Assets:</h4>
+        <button onclick="download_types()">Save</button><button>Load</button><br>
+        Type<br>
+        <select id="type" onclick="compile_sub_list()"></select>-<button onclick="create_type()">+</button><button onclick="delete_type()">-</button><br>
+        SubType<br>
+        <select id="sub"></select>-<button onclick="create_sub()">+</button><button onclick="delete_sub()">-</button><br>
+        default:<input id="default">
+        
+        
+        
+        <script>
+            var image_array = [];
+            var dir_array = [];
+            var image_div = "";
+            function upload_image() {
+                //get type name
+                var image_id = prompt("name:");
+                var image_dir = prompt("directory:");
+                //add image to array
+                image_array[image_array.length] = image_id;
+                dir_array[dir_array.length] = image_dir;
+                
+                compile_library();
+            }
+            
+            function delete_image() {
+                var img_delete = document.getElementById("image").value;
+                //create list of images
+                for (i = 0; i < image_array.length; i++) {
+                    if (img_delete == image_array[i] + " | " + dir_array[i]) {
+                        image_array.splice(i,1);
+                        dir_array.splice(i,1);
+                    }
+                    
+                }
+                compile_library();
+            }
+            
+            function compile_library() {
+                var image_div = "";
+                for (i = 0; i < image_array.length; i++) {
+                    image_div = image_div + "<img src=" + dir_array[i] +  " id=" + image_array[i] + ">"
+                
+                }
+                document.getElementById("library").innerHTML = image_div;
+                //create list of images
+                var i;
+                var select_tile_list = "";
+                for (i = 0; i < image_array.length; i++) {
+                    
+                    select_tile_list = select_tile_list + "<option>" + image_array[i] + " | " + dir_array[i] + "</option>";
+                }
+                document.getElementById("image").innerHTML = select_tile_list;
+            }
+            
+            function download_images() {
+                image_dl = "image_array = " + JSON.stringify(image_array) + "; dir_array = " + JSON.stringify(dir_array) + ";" + " load_assets_2();";
+                var file_name = prompt("file name:");
+                download(file_name + "_wad.js",image_dl);
+            }
+        </script>
+        <script>
+            var testtypes = [
+                {
+                    type:"hey",
+                    subtypes:["w","a","s","d"],
+                    defaults:["","","","",""]
+                }
+            ]
+            //-------------------------------------------
+            var type_array = [];
+            var sub_array = [];
+            var default_array = [];
+            
+            function create_type() {
+                //get type name
+                var type_string = prompt("name:");
+                //add image to array
+                
+                type_array[type_array.length] = type_string;
+                
+                compile_type_list();
+            }
+            
+            function compile_type_list() {
+                //create list of images
+                var i;
+                var select_tile_list = "";
+                for (i = 0; i < type_array.length; i++) {
+                    
+                    select_tile_list = select_tile_list + "<option>" + type_array[i] + "</option>";
+                }
+                document.getElementById("type").innerHTML = select_tile_list;
+                compile_sub_list();
+            }
+            
+            function delete_type() {
+                var type_delete = document.getElementById("type").value;
+                //create list of images
+                for (i = 0; i < type_array.length; i++) {
+                    if (type_delete == type_array[i]) {
+                        type_array.splice(i,1);
+                    }
+                }
+                compile_type_list();
+            }
+            
+            function create_sub() {
+                //get type name
+                var sub_string = prompt("name:");
+                
+                var selected = document.getElementById("type").value;
+                //create list of images
+                for (i = 0; i < type_array.length; i++) {
+                    if (selected == type_array[i]) {
+                        if (sub_array[i] == undefined) {
+                            sub_array[i] = []
+                        }
+                        sub_array[i][sub_array[i].length] = sub_string;
+                    }
+                }
+                
+                compile_sub_list();
+            }
+            
+            function delete_sub() {
+                var type_delete = document.getElementById("sub").value;
+                //create list of images
+                for (i = 0; i < sub_array.length; i++) {
+                    if (type_delete == sub_array[i]) {
+                        sub_array.splice(i,1);
+                    }
+                }
+                compile_sub_list();
+            }
+            
+            function compile_sub_list() {
+                var select_sub_list = "";
+                var type_find = document.getElementById("type").value;
+                //find type
+                for (i = 0; i < type_array.length; i++) {
+                    if (type_find == type_array[i]) {
+                        
+                        if (sub_array[i] != undefined) {
+                            //sort list
+                            var i;
+                            for (j = 0; j < sub_array[i].length; j++) {
+                    
+                                select_sub_list = select_sub_list + "<option>" + sub_array[i][j] + "</option>";
+                            }
+                        }
+                    }
+                }
+                
+                document.getElementById("sub").innerHTML = select_sub_list;
+            }
+            
+            function download_types() {
+                type_dl = "type_array = " + JSON.stringify(type_array) + "; sub_array = " + JSON.stringify(sub_array) + ";" + " load_fgd_2();";
+                var file_name = prompt("file name:");
+                download(file_name + "_fgd.js",type_dl);
+            }
+            //note: JSON.stringify strings and fixes [object Object]
+        </script>
+        <script>
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            }
+        </script>
+        <hr>
+        <p>FEATURES TODO<br>
+        -Subtype Defaults<br>
+        -Load wads<br>
+        -Load fgds</p>
+    </body>
+</html>
