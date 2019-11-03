@@ -136,6 +136,8 @@
                 executer(execute2, 10000, execute2mult);
                 executer(execute, 1000, executemult);
                 
+                executer(move, 10, movemult);
+                
                 //render tiles
                 render();
             }
@@ -146,6 +148,11 @@
             //-----included extras-------------------------------------------------------------------------------------
             
             //BIND FUNCTION
+            var up = false;
+            var left = false;
+            var down = false;
+            var right = false;
+            
             window.addEventListener("keydown", downbinds, false);
             window.addEventListener("keyup", upbinds, false);
             function upbinds(u){binds(u,"")};
@@ -155,10 +162,29 @@
                 //example
                 //W
                 if (u.keyCode == "87") {
-                    console.log("W off");
+                    up = false;
                 } else if (d.keyCode == "87") {
-                    console.log("W on");
+                    up = true;
                 }
+                //A
+                if (u.keyCode == "65") {
+                    left = false;
+                } else if (d.keyCode == "65") {
+                    left = true;
+                }
+                //D
+                if (u.keyCode == "68") {
+                    right = false;
+                } else if (d.keyCode == "68") {
+                    right = true;
+                }
+                //S
+                if (u.keyCode == "83") {
+                    down = false;
+                } else if (d.keyCode == "83") {
+                    down = true;
+                }
+                
             
             }
             
@@ -169,10 +195,24 @@
             function collision(tile1, tile2, xdir, ydir) {
                 //to make custom hitboxes, change texture_dimensions to some kind of .width
                 if (tile2.x < tile1.x + texture_dimensions + xdir && tile2.x + texture_dimensions > tile1.x + xdir && tile2.y < tile1.y + texture_dimensions + ydir && tile2.y + texture_dimensions > tile1.y + ydir) {
-                    alert("COLLLLLIDEEEE");
+                    return true;
                 }
             }
             
+            //!!!
+            function layercollision(tile1, layer, xdir, ydir) {
+                
+                for (tile = 0; tile < tiles[layer].length; tile++) {
+                    var test_tile = tiles[layer][tile];
+                    
+                    if (!collision(tile1, test_tile, xdir, ydir)) {
+
+                    } else {
+                        return true;
+                    }
+                    
+                }
+            }
             
             
             
@@ -208,6 +248,27 @@
                 execute3mult = newmult;
                 
                 //console.log("yolo3");
+            }
+            
+            var movemult = 0;
+            function move(newmult) {
+                movemult = newmult;
+                
+                if (up && !layercollision(tiles[2][0], 1, 0, -1)) {
+                    tiles[2][0].y -= 1;
+                }
+                
+                if (left && !layercollision(tiles[2][0], 1, -1, 0)) {
+                    tiles[2][0].x -= 1;
+                }
+                
+                if (down && !layercollision(tiles[2][0], 1, 0, 1)) {
+                    tiles[2][0].y += 1;
+                }
+                
+                if (right && !layercollision(tiles[2][0], 1, 1, 0)) {
+                    tiles[2][0].x += 1;
+                }
             }
             
             load_level("clipping_test");
