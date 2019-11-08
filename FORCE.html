@@ -31,7 +31,9 @@
             <img src=images/devtex/green.bmp id=green>
             <img src=images/devtex/red.bmp id=red>
             <img src=images/devtex/pink.bmp id=pink>
+            <img src=images/devtex/brown.bmp id=brown>
             <img src="images/devtex/dev_player.bmp" id=dev_player>
+            <img src="images/devtex/dev_entity.bmp" id=dev_entity>
             <!---->
         </div>
         <script>
@@ -39,7 +41,7 @@
             var canvas_name = "game";
             var texture_dimensions = 16;
             var grid_height = 160;
-            var grid_width = 160;
+            var grid_width = 320;
                         
             //get canvas info
             var canvas = document.getElementById(canvas_name);
@@ -132,11 +134,18 @@
                 //get tick
                 real_time_tick();
                 
-                //example
-                executer(execute2, 10000, execute2mult);
-                executer(execute, 1000, executemult);
+                gamephys();
                 
-                executer(move, 10, movemult);
+                //example
+                executer(execute2, 100, execute2mult);
+                executer(execute, 10, executemult);
+                
+                executer(move, 15, movemult);
+                
+                camera.x = tiles[1][0].x;
+                camera.y = tiles[1][0].y;
+                
+                targetsignal();
                 
                 //render tiles
                 render();
@@ -195,19 +204,7 @@
             function collision(tile1, tile2, xdir, ydir) {
                 //to make custom hitboxes, change texture_dimensions to some kind of .width
                 if (tile2.x < tile1.x + texture_dimensions + xdir && tile2.x + texture_dimensions > tile1.x + xdir && tile2.y < tile1.y + texture_dimensions + ydir && tile2.y + texture_dimensions > tile1.y + ydir) {
-                    return true;
-                }
-            }
-            
-            //!!!
-            function layercollision(tile1, layer, xdir, ydir) {
-                
-                for (tile = 0; tile < tiles[layer].length; tile++) {
-                    var test_tile = tiles[layer][tile];
-                    
-                    if (!collision(tile1, test_tile, xdir, ydir)) {
-
-                    } else {
+                    if (tile1 != tile2) {
                         return true;
                     }
                     
@@ -233,14 +230,13 @@
             function execute(newmult) {
                 executemult = newmult;
                 
-                //console.log("yolo");
+                
             }
             
             var execute2mult = 0;
             function execute2(newmult) {
                 execute2mult = newmult;
                 
-                //console.log("yolo2");
             }
             
             var execute3mult = 0;
@@ -254,24 +250,157 @@
             function move(newmult) {
                 movemult = newmult;
                 
-                if (up && !layercollision(tiles[2][0], 1, 0, -1)) {
-                    tiles[2][0].y -= 1;
+                if (up && canmove(0, -1)) {
+                    tiles[1][0].y -= 1;
                 }
                 
-                if (left && !layercollision(tiles[2][0], 1, -1, 0)) {
-                    tiles[2][0].x -= 1;
+                if (left && canmove(-1, 0)) {
+                    tiles[1][0].x -= 1;
                 }
                 
-                if (down && !layercollision(tiles[2][0], 1, 0, 1)) {
-                    tiles[2][0].y += 1;
+                if (down && canmove(0, 1)) {
+                    tiles[1][0].y += 1;
                 }
                 
-                if (right && !layercollision(tiles[2][0], 1, 1, 0)) {
-                    tiles[2][0].x += 1;
+                if (right && canmove(1, 0)) {
+                    tiles[1][0].x += 1;
                 }
             }
             
-            load_level("clipping_test");
+            
+            //!!!
+            function clippingcollision(tile1, layer, xdir, ydir) {
+                
+                for (tile = 0; tile < tiles[layer].length; tile++) {
+                    var test_tile = tiles[layer][tile];
+                    
+                    if (!collision(tile1, test_tile, xdir, ydir) && test_tile.type != "player") {
+
+                    } else {
+                        return true;
+                    }
+                    
+                }
+            }
+            
+            
+            //!!!
+            function gamecollision(tile1, layer, xdir, ydir) {
+                
+                for (tile = 0; tile < tiles[layer].length; tile++) {
+                    var test_tile = tiles[layer][tile];
+                    
+                    if (!collision(tile1, test_tile, xdir, ydir)) {
+                        
+                    } else {
+                        //door collision
+                        if (test_tile.type == "door" && test_tile.attributes.toggle == 0) {
+                            return true;
+                        }
+                        
+                        
+                        
+                        //pushable collision
+                        if (test_tile.type == "pushable") {
+                            
+                            //clipping collision
+                            if (clippingcollision(test_tile, 2, xdir, ydir)) {
+                                return true;
+                            }
+                            
+                            if (gamecollision(test_tile, 1, xdir, ydir)) {
+                                return true;
+                            } else if (clippingcollision(test_tile, 1, xdir, ydir)) {
+                                test_tile.x += xdir;
+                                test_tile.y += ydir;
+                            }
+                        }
+                        
+                        
+                        
+                    }
+                }
+                    
+            }
+            
+            
+            
+            
+            
+            
+            function canmove(xdir, ydir) {
+                if (clippingcollision(tiles[1][0], 2, xdir, ydir)) {
+                    return false;
+                }
+                
+                if (gamecollision(tiles[1][0], 1, xdir, ydir)) {
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function targetsignal() {
+                for (tile = 0; tile < tiles[1].length; tile++) {
+                    var test_tile = tiles[1][tile];
+                    
+                    if (test_tile.attributes.neededsignal != null && test_tile.attributes.neededsignal != "" && test_tile.attributes.neededsignal != 0) {
+                        
+                        test_tile.attributes.signal = 0;
+                        test_tile.attributes.neededsignal = parseFloat(test_tile.attributes.neededsignal);
+                        
+                        for (tile = 0; tile < tiles[1].length; tile++) {
+                            var test_tile2 = tiles[1][tile];
+                            
+                            if (test_tile2.attributes.target == test_tile.attributes.id && test_tile2.attributes.toggle == 1) {
+                                
+                                test_tile.attributes.signal = 1;
+                            
+                            }
+                        }
+                        
+                        if (parseFloat(test_tile.attributes.neededsignal) <= parseFloat(test_tile.attributes.signal)) {
+                            test_tile.attributes.toggle = 1;
+                        } else {
+                            test_tile.attributes.toggle = 0;
+                        }
+                    }
+                    
+                }
+                
+            }
+            
+            
+            function gamephys() {
+                for (tile = 0; tile < tiles[1].length; tile++) {
+                    var test_tile = tiles[1][tile];
+                    
+                    if (test_tile.attributes.toggle == 1 && test_tile.type == "button") {
+                        test_tile.attributes.toggle = 0;
+                    }
+                    
+                    for (tile2 = 0; tile2 < tiles[1].length; tile2++) {
+                        var test_tile2 = tiles[1][tile2];
+                        
+                        if (collision(test_tile, test_tile2, 0, 0)) {
+                            
+                            //pushable to button collision
+                            if (test_tile.type == "button" && test_tile2.type == "pushable") {
+                                test_tile.attributes.toggle = 1;
+                            }
+                            
+                            
+                        }
+                    
+                    }
+                }
+                
+            }
+            
+            load_level("pushy3");
+            
+            //todo
+            
             
         </script>
     </body>
