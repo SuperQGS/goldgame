@@ -326,6 +326,9 @@
             
             //_____TOOLS_____
             
+            //!!!toolstring
+            var toolstring = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Select</option><option>Select Group</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option><option>Get Tile Num</option>";
+            
             //000canvas info !!!
             var canvas = document.getElementById("example");
             var ctx = canvas.getContext("2d");
@@ -481,11 +484,11 @@
                 
                 if (place_specific_type == "No Tile Selected" || place_specific_type == "") {
                     alert("No Tile Selected");
-                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Fill Area With Tile";
                 } else if (a_click_x > a_click2_x || a_click_y > a_click2_y) {
                     alert("Invalid use of tool. Please fill from top left to bottom right.");
-                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Fill Area With Tile";
                 } else {
                     var area_loop_x = 0;
@@ -502,7 +505,7 @@
                     }
                     //existing_tiles();
                     
-                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Fill Area With Tile";
                 }
             }
@@ -532,7 +535,7 @@
                 
                 if (d_click_x > d_click2_x || d_click_y > d_click2_y) {
                     alert("Invalid use of tool. Please fill from top left to bottom right.");
-                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Delete Area";
                 } else {
                     var area_loop_x = 0;
@@ -563,7 +566,7 @@
                         area_loop_x = 0;
                         area_loop_y = area_loop_y + 1;
                     }
-                    document.getElementById("tool").innerHTML = "<option>Place Tile To Grid</option><option>Fill Area With Tile</option><option>Place Tile To Pixel</option><option>Get Grid Coordinates</option><option>Get Pixel Coordinates</option><option>Delete</option><option>Delete Area</option>";
+                    document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Delete Area";
                 }
                 var change_tile;
@@ -665,10 +668,16 @@
                 var select_string = "<strong>Selected Group:</strong><br>" +
                     grouplist +
                     "<button onclick=move('aw')>\<</button><button onclick=move('ae')>\></button><button onclick=move('as')>v</button><button onclick=move('an')>^</button><br>" +
-                    "<button onclick='edit_group()'>edit</button><button>delete</button><button>copy</button><button onclick='alert(JSON.stringify(group))'>data</button><button onclick='group=[]'>deselect</button>";
+                    "<button onclick='edit_group()'>edit</button><button>delete</button><button>copy</button><button onclick='alert(JSON.stringify(group))'>data</button><button onclick='deselect_group()'>deselect</button>";
                 
                 
                     document.getElementById("selected_group_div").innerHTML = select_string;
+            }
+            
+            //!!!deselect
+            function deselect_group() {
+                group = [];
+                document.getElementById("selected_group_div").innerHTML = "<strong>No Group Selected</strong><br>"
             }
             
             //!!!
@@ -1060,6 +1069,43 @@
                 document.body.removeChild(element);
             }
             
+            //!!!binds
+            
+            var shift = false
+            window.addEventListener("keydown", downbinds, false);
+            window.addEventListener("keyup", upbinds, false);
+            function upbinds(u){binds(u,"")};
+            function downbinds(d){binds("",d)};
+            
+            function binds(u,d) {
+                //shift
+                if (u.keyCode == "16") {
+                    shift = false;
+                } else if (d.keyCode == "16") {
+                    shift = true;
+                }
+                
+                
+                //place to grid, 1
+                if (d.keyCode == "49" && shift) {
+                    document.getElementById("tool").value = "Place Tile To Grid";
+                }
+                
+                //fill, f
+                if (d.keyCode == "70" && shift) {
+                    document.getElementById("tool").value = "Fill Area With Tile";
+                }
+                
+                if (d.keyCode == "83" && shift) {
+                    document.getElementById("tool").value = "Select";
+                }
+                
+                if (d.keyCode == "68" && shift) {
+                    document.getElementById("tool").value = "Delete";
+                }
+                
+            
+            }
             
             
             
@@ -1127,7 +1173,6 @@
             //fill select
             
             //IMPORTANT BUGS
-            //fix fill tool and delete tool, they bug the select tool, could fix with universal "tool tags" variable
             
             //BUGS
             //fix deletearea
@@ -1168,7 +1213,7 @@
             
             //devtemp
             load_assets("wads/devtex_wad.js");
-            load_fgd("fgds/gold_fgd.js");
+            load_fgd("fgds/goldbeta_fgd.js");
         </script>
         <div id="added_scripts"></div>
     </body>
