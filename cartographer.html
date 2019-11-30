@@ -515,7 +515,7 @@
             var d_click_x;
             var d_click_y;
             var d_click2_x;
-            var d_click2_y
+            var d_click2_y;
             function delete_tile_area(canvas, evt) {
                 //damage control
                 document.getElementById("tool").innerHTML = "<option>Delete Area [1/2]</option>";
@@ -527,6 +527,7 @@
                 d_click_y = ((Math.floor(((evt.clientY - rect.top) / scale) / texture_dimensions) * texture_dimensions) - exgrid_height/2);
                 
             }
+            
             function delete_tile_area_two(canvas, evt) {
                 var rect = canvas.getBoundingClientRect();
                 
@@ -538,54 +539,24 @@
                     document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Delete Area";
                 } else {
-                    var area_loop_x = 0;
-                    var area_loop_y = 0;
                     
-                    while (d_click_y + (texture_dimensions * area_loop_y) <= d_click2_y) {
-                        while (d_click_x + (texture_dimensions * area_loop_x) <= d_click2_x) {
-                            var change_tile;
-                            var new_tile_num = 0;
-                            var num_of_tiles = tiles[selected_layer].length - 1;
-                            var tileloop = true;
-                            while (tileloop) {
-                                if (new_tile_num < num_of_tiles) {
-                                    change_tile = tiles[selected_layer][new_tile_num];
-                                    if (change_tile.x == d_click_x + (texture_dimensions * area_loop_x) && change_tile.y == d_click_y + (texture_dimensions * area_loop_y)) {
-                                        tiles[selected_layer].splice(new_tile_num, 1);
-                                        exist_list.splice(new_tile_num, 1);
-                                    }
-                                    new_tile_num = new_tile_num + 1;
-                                    } else {
-                                        tileloop = false;
-                                }
-                            }
-                            
-                            //noexisting_tiles();
-                            area_loop_x = area_loop_x + 1;
+                    var todelete = [];
+                    
+                    for (i = 0; i < tiles[selected_layer].length; i++) {
+                        var inrange = tiles[selected_layer][i];
+                        if (inrange.x >= d_click_x && inrange.x <= d_click2_x && inrange.y >= d_click_y && inrange.y <= d_click2_y) {
+                            todelete[todelete.length] = i;
                         }
-                        area_loop_x = 0;
-                        area_loop_y = area_loop_y + 1;
                     }
+                    
+                    
+                    for (i = 0; i < todelete.length; i++) {
+                        delete_tile(todelete[i] - i);
+                    }
+                    
                     document.getElementById("tool").innerHTML = toolstring;
                     document.getElementById("tool").value = "Delete Area";
                 }
-                var change_tile;
-                var new_tile_num = 0;
-                var num_of_tiles = tiles[selected_layer].length - 1;
-                var tileloop = true;
-                while (tileloop) {
-                    if (new_tile_num <= num_of_tiles) {
-                        change_tile = tiles[selected_layer][new_tile_num];
-                        if (change_tile.x == d_click2_x && change_tile.y == d_click2_y) {
-                            tiles[selected_layer].splice(new_tile_num, 1);
-                            exist_list.splice(new_tile_num, 1);
-                        }
-                        new_tile_num = new_tile_num + 1;
-                    } else {
-                        tileloop = false;
-                    }
-                }
-                //existing_tiles();
             }
             
             //!!!select
@@ -646,6 +617,7 @@
             
             //!!! select group
             var group = []
+            var grouplistids = [];
             function add_to_group(canvas, evt) {
                 var rect = canvas.getBoundingClientRect();
                 var click_x = ((Math.floor(((evt.clientX - rect.left) / scale) / texture_dimensions) * texture_dimensions) - exgrid_width/2);
@@ -661,6 +633,7 @@
 
                 var grouplist = "";
                 for (i = 0; i < group.length; i++) {
+                    grouplistids[grouplistids.length] = i;
                     grouplist = grouplist + "tiles[" + group[i].layer + "][" + group[i].tile + "] - " + group[i].type + "," + group[i].image_string + "," + group[i].x + "," + group[i].y + "<br>"
                 }
                 
@@ -668,7 +641,7 @@
                 var select_string = "<strong>Selected Group:</strong><br>" +
                     grouplist +
                     "<button onclick=move('aw')>\<</button><button onclick=move('ae')>\></button><button onclick=move('as')>v</button><button onclick=move('an')>^</button><br>" +
-                    "<button onclick='edit_group()'>edit</button><button>delete</button><button>copy</button><button onclick='alert(JSON.stringify(group))'>data</button><button onclick='deselect_group()'>deselect</button>";
+                    "<button onclick='edit_group()'>edit</button><button onclick=deletegroup(grouplistids)>delete</button><button>copy</button><button onclick='alert(JSON.stringify(group))'>data</button><button onclick='deselect_group()'>deselect</button>";
                 
                 
                     document.getElementById("selected_group_div").innerHTML = select_string;
@@ -677,7 +650,17 @@
             //!!!deselect
             function deselect_group() {
                 group = [];
+                grouplistids = [];
                 document.getElementById("selected_group_div").innerHTML = "<strong>No Group Selected</strong><br>"
+            }
+            
+            //!!!deletegroup
+            function deletegroup(list) {
+                for (i = 0; i < list.length; i++) {
+                    delete_tile(list[i]);
+                    console.log(list[i]);
+                }
+                deselect_group();
             }
             
             //!!!
@@ -1165,7 +1148,7 @@
             //CRUCIAL FEATURES
             
             //FEATURES
-            //edit selected tile*(s) type, image, attributes
+            //edit selected tile
             //copy/paste selected tile*(s)
             //cafb todo
             //layer names
@@ -1175,11 +1158,11 @@
             //IMPORTANT BUGS
             
             //BUGS
-            //fix deletearea
             //when load, figure out layer list, make sure the array and dropdown work
             //no way to delete off center tile
             //fix selecting twice bug //future: for group select?
-            //update select display when things change
+            //update select and select group display when things change
+            //reset selections when layer change
             
             //CLEAN CODE
             //replace while loops with for loops
