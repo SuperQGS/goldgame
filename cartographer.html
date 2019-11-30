@@ -94,6 +94,7 @@
                 <!--!!!button onclick="convert_data()">Convert</button>
                 <button onclick="output()">Game</button-->
                 <button onclick="jsfile()">Compile</button>
+                <button onclick="launch()">Launch</button>
                 
                 |
                 
@@ -1090,6 +1091,17 @@
             
             }
             
+            //!!!launch
+            function launch() {
+                get_tiles();
+                
+                var soft = "tiles =" + "[" + get_tile_list + "];" + get_vis_list;
+                
+                localStorage.setItem("softlaunch", soft);
+                
+                window.open("FORCE.html");
+            }
+            
             
             
             
@@ -1196,7 +1208,7 @@
             
             //devtemp
             load_assets("wads/devtex_wad.js");
-            load_fgd("fgds/goldbeta_fgd.js");
+            load_fgd("fgds/gold_fgd.js");
         </script>
         <div id="added_scripts"></div>
     </body>
