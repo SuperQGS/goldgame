@@ -1,0 +1,1 @@
+type_array = ["background","clipping","door","lever","button","pushable","trigger","player"]; sub_array = [null,null,["toggle","id","signal","neededsignal"],["toggle","target"],["toggle","target"],null,["id","toggle","signal","neededsignal","repeats","func"]]; load_fgd_2();
