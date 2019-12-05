@@ -151,8 +151,7 @@
             <div id="sidelist">
                 <div id="exist">
                     
-                    Tiles:
-                    <div class="tile">Tile Name Image Coordinates Delete</div>
+                    <div class="tile"><!--what!!!--></div>
                     <div id="selected_group_div">
                         <strong>No Group Selected</strong><br>
                     </div>
@@ -322,6 +321,13 @@
                 tiles[selected_layer].vis = true;
             }
             
+            //!!!compile layers
+            function compile_layers() {
+                for (i = 0; i < tiles.length-1; i++) {
+                    layer_ammount++
+                    document.getElementById("layerlist").innerHTML = document.getElementById("layerlist").innerHTML + "<option>" + layer_ammount + "</option>";
+                }
+            }
             
             
             
@@ -940,7 +946,7 @@
                 
                 get_tiles();
                 
-                var save_file = "function save_func(){ " + "tiles=[" + get_tile_list + "]; " + get_vis_list + " } save_func();";
+                var save_file = "function save_func(){ " + "tiles=[" + get_tile_list + "]; " + get_vis_list + " } save_func(); compile_layers();";
                 
                 var file_name = prompt("Save As: (.js)");
                 download(file_name + ".js",save_file);
@@ -1167,7 +1173,7 @@
             //CRUCIAL FEATURES
             
             //FEATURES
-            //edit selected tile
+            //edit subtypes (group too)
             //copy/paste selected tile*(s)
             //cafb todo
             //layer names
@@ -1177,10 +1183,9 @@
             //IMPORTANT BUGS
             
             //BUGS
-            //when load, figure out layer list, make sure the array and dropdown work
             //fix selecting twice bug //future: for group select?
-            //update select and select group display when things change
-            //reset selections when layer change
+            //update select(coords) and select group display when things change
+            //select and group select "selected layer" dependency
             
             //CLEAN CODE
             //replace while loops with for loops
