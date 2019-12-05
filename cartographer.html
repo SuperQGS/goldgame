@@ -644,10 +644,12 @@
                     group[group.length - 1].layer = selected_layer;
                     group[group.length - 1].tile = tile;
                 }
-
+                
+                grouplistids[grouplistids.length] = i;
+                
                 var grouplist = "";
                 for (i = 0; i < group.length; i++) {
-                    grouplistids[grouplistids.length] = i;
+                    
                     grouplist = grouplist + "tiles[" + group[i].layer + "][" + group[i].tile + "] - " + group[i].type + "," + group[i].image_string + "," + group[i].x + "," + group[i].y + "<br>"
                 }
                 
@@ -671,9 +673,9 @@
             //!!!deletegroup
             function deletegroup(list) {
                 for (i = 0; i < list.length; i++) {
-                    delete_tile(list[i]);
-                    console.log(list[i]);
+                    delete_tile(list[i] - i);
                 }
+                
                 deselect_group();
             }
             
