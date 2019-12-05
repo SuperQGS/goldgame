@@ -582,7 +582,7 @@
                     "y: " + selected_tile.y + "<br>" +
                     "<div id='select_subs'></div><br>" +
                     "<button onclick=move('w')>\<</button><button onclick=move('e')>\></button><button onclick=move('s')>v</button><button onclick=move('n')>^</button><br>" +
-                    "<button>edit</button><button>delete</button><button>copy</button>";
+                    "<button onclick=edit_select()>edit</button><button>delete</button><button>copy</button>";
                 
                 
                     document.getElementById("selected_tile_div").innerHTML = select_string;
@@ -614,6 +614,13 @@
                 
                     document.getElementById("select_subs").innerHTML = select_sub_list;
                 }
+            }
+            
+            //!!!edit select
+            function edit_select() {
+                selected_tile.type = document.getElementById("type").value;
+                selected_tile.image = eval(document.getElementById("image").value);
+                selected_tile.image_string = document.getElementById("image").value;
             }
             
             //!!! select group
@@ -1171,7 +1178,6 @@
             
             //BUGS
             //when load, figure out layer list, make sure the array and dropdown work
-            //no way to delete off center tile
             //fix selecting twice bug //future: for group select?
             //update select and select group display when things change
             //reset selections when layer change
