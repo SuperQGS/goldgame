@@ -172,27 +172,27 @@
             function binds(u,d) {
                 //example
                 //W
-                if (u.keyCode == "87") {
+                if (u.keyCode == "87" || u.keyCode == "38") {
                     up = false;
-                } else if (d.keyCode == "87") {
+                } else if (d.keyCode == "87" || d.keyCode == "38") {
                     up = true;
                 }
                 //A
-                if (u.keyCode == "65") {
+                if (u.keyCode == "65" || u.keyCode == "37") {
                     left = false;
-                } else if (d.keyCode == "65") {
+                } else if (d.keyCode == "65" || d.keyCode == "37") {
                     left = true;
                 }
                 //D
-                if (u.keyCode == "68") {
+                if (u.keyCode == "68" || u.keyCode == "39") {
                     right = false;
-                } else if (d.keyCode == "68") {
+                } else if (d.keyCode == "68" || d.keyCode == "39") {
                     right = true;
                 }
                 //S
-                if (u.keyCode == "83") {
+                if (u.keyCode == "83" || u.keyCode == "40") {
                     down = false;
-                } else if (d.keyCode == "83") {
+                } else if (d.keyCode == "83" || d.keyCode == "40") {
                     down = true;
                 }
                 
