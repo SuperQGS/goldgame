@@ -1,0 +1,1 @@
+image_array = ["button0","button1","door0","door1","lever0","lever1"]; dir_array = ["images/goldtest/button0.bmp","images/goldtest/button1.bmp","images/goldtest/door0.bmp","images/goldtest/door1.bmp","images/goldtest/lever0.bmp","images/goldtest/lever1.bmp"]; load_assets_2();
