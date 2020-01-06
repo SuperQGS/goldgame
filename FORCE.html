@@ -36,6 +36,13 @@
             <img src="images/devtex/dev_entity.bmp" id=dev_entity>
             <img src="images/devtex/dev_item.bmp" id=dev_item>
             <img src="images/devtex/missingno.bmp" id=missingno>
+            
+            <img src="images/goldtest/button0.bmp" id=button0>
+            <img src="images/goldtest/button1.bmp" id=button1>
+            <img src="images/goldtest/lever0.bmp" id=lever0>
+            <img src="images/goldtest/lever1.bmp" id=lever1>
+            <img src="images/goldtest/door0.bmp" id=door0>
+            <img src="images/goldtest/door1.bmp" id=door1>
             <!---->
         </div>
         <script>
@@ -148,6 +155,7 @@
                 camera.y = tiles[1][0].y;
                 
                 targetsignal();
+                switchimage();
                 
                 //render tiles
                 render();
@@ -421,6 +429,31 @@
                     }
                 }
                 
+            }
+            
+            function switchimage() {
+                
+                for (tile = 0; tile < tiles[1].length; tile++) {
+                    
+                    if (tiles[1][tile].image == door0 && tiles[1][tile].attributes.toggle == 1) {
+                        tiles[1][tile].image = door1;
+                    }
+                    if (tiles[1][tile].image == door1 && tiles[1][tile].attributes.toggle == 0) {
+                        tiles[1][tile].image = door0;
+                    }
+                    if (tiles[1][tile].image == button0 && tiles[1][tile].attributes.toggle == 1) {
+                        tiles[1][tile].image = button1;
+                    }
+                    if (tiles[1][tile].image == button1 && tiles[1][tile].attributes.toggle == 0) {
+                        tiles[1][tile].image = button0;
+                    }
+                    if (tiles[1][tile].image == lever0 && tiles[1][tile].attributes.toggle == 1) {
+                        tiles[1][tile].image = lever1;
+                    }
+                    if (tiles[1][tile].image == lever1 && tiles[1][tile].attributes.toggle == 0) {
+                        tiles[1][tile].image = lever0;
+                    }
+                }
             }
             
             function softlaunch() {
