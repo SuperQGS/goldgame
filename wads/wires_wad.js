@@ -1,0 +1,1 @@
+image_array = ["wire_vert","wire_hor","wire_c_tl","wire_c_tr","wire_c_br","wire_c_bl"]; dir_array = ["images/goldtest/wire_vert.png","images/goldtest/wire_hor.png","images/goldtest/wire_c_tl.png","images/goldtest/wire_c_tr.png","images/goldtest/wire_c_br.png","images/goldtest/wire_c_bl.png"]; load_assets_2();
