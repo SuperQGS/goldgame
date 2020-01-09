@@ -178,6 +178,7 @@
             var left = false;
             var down = false;
             var right = false;
+            var space = false;
             
             window.addEventListener("keydown", downbinds, false);
             window.addEventListener("keyup", upbinds, false);
@@ -209,6 +210,12 @@
                     down = false;
                 } else if (d.keyCode == "83" || d.keyCode == "40") {
                     down = true;
+                }
+                //S
+                if (u.keyCode == "32") {
+                    space = false;
+                } else if (d.keyCode == "32") {
+                    space = true;
                 }
                 
             
@@ -330,6 +337,30 @@
                             } else if (clippingcollision(test_tile, 1, xdir, ydir)) {
                                 test_tile.x += xdir;
                                 test_tile.y += ydir;
+                            }
+                        }
+                        
+                        
+                        
+                    }
+                    if (!collision(tile1, test_tile, -xdir, -ydir)) {
+                        
+                    } else if (space) {
+                        
+                        //pushable collision
+                        if (test_tile.type == "pushable" && tile1.type == "player") {
+                            
+                            //clipping collision
+                            if (clippingcollision(test_tile, 2, xdir, ydir)) {
+                                return true;
+                            }
+                            
+                            if (gamecollision(test_tile, 1, xdir, ydir) && gamecollision(0, 1, xdir, ydir)) {
+                                return true;
+                            } else if (clippingcollision(test_tile, 1, xdir, ydir)) {
+                                test_tile.x += xdir;
+                                test_tile.y += ydir;
+                                return 0;
                             }
                         }
                         
