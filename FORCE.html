@@ -216,6 +216,7 @@
                     space = false;
                 } else if (d.keyCode == "32") {
                     space = true;
+                    //playaudio(nyan);
                 }
                 
             
@@ -276,18 +277,22 @@
                 
                 if (up && canmove(0, -1)) {
                     tiles[1][0].y -= 1;
+                    playaudio(step);
                 }
                 
                 if (left && canmove(-1, 0)) {
                     tiles[1][0].x -= 1;
+                    playaudio(step);
                 }
                 
                 if (down && canmove(0, 1)) {
                     tiles[1][0].y += 1;
+                    playaudio(step);
                 }
                 
                 if (right && canmove(1, 0)) {
                     tiles[1][0].x += 1;
+                    playaudio(step);
                 } else {
                     portal(right, 1, 0);
                 }
@@ -364,6 +369,7 @@
                             } else if (clippingcollision(test_tile, 1, xdir, ydir)) {
                                 test_tile.x += xdir;
                                 test_tile.y += ydir;
+                                playaudio(push);
                             }
                         }
                         
@@ -387,6 +393,7 @@
                             } else if (clippingcollision(test_tile, 1, xdir, ydir)) {
                                 test_tile.x += xdir;
                                 test_tile.y += ydir;
+                                playaudio(push);
                                 return 0;
                             }
                         }
@@ -501,15 +508,19 @@
                 for (tile = 0; tile < tiles[1].length; tile++) {
                     
                     if (tiles[1][tile].image == door0 && tiles[1][tile].attributes.toggle == 1) {
+                        playaudio(doorclose);
                         tiles[1][tile].image = door1;
                     }
                     if (tiles[1][tile].image == door1 && tiles[1][tile].attributes.toggle == 0) {
+                        playaudio(dooropen);
                         tiles[1][tile].image = door0;
                     }
                     if (tiles[1][tile].image == button0 && tiles[1][tile].attributes.toggle == 1) {
+                        playaudio(buttonon);
                         tiles[1][tile].image = button1;
                     }
                     if (tiles[1][tile].image == button1 && tiles[1][tile].attributes.toggle == 0) {
+                        playaudio(buttonoff);
                         tiles[1][tile].image = button0;
                     }
                     if (tiles[1][tile].image == lever0 && tiles[1][tile].attributes.toggle == 1) {
@@ -532,6 +543,20 @@
             
             //todo
             
+            
+            
+            //epic audio system
+            var nyan = new Audio('testsounds/nyan.mp3');
+            var dooropen = new Audio('testsounds/dr1_end.WAV');
+            var doorclose = new Audio('testsounds/dr1_strt.WAV');
+            var buttonon = new Audio('testsounds/menu1.WAV');
+            var buttonoff = new Audio('testsounds/menu3.WAV');
+            var step = new Audio('testsounds/step1.WAV');
+            var push = new Audio('testsounds/tim_pump.WAV')
+            
+            function playaudio(audio) {
+                audio.play();
+            }
             
         </script>
     </body>
