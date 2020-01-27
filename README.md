@@ -12,9 +12,9 @@ gameplay revolves around puzzle mechanics, similar to Portal.
 -Once the game is in a finished state, simply run "FORCE.html"
 
 ## DEVELOPMENT:
-# --TODO list--
+### --TODO list--
 
-# Cartographer & Engine TODO:
+### Cartographer & Engine TODO:
 
 -cartographer compiles order of tiles
 
@@ -28,7 +28,7 @@ gameplay revolves around puzzle mechanics, similar to Portal.
 
 -fix pushable pulling glitches
 
-# Features TODO:
+### Features TODO:
 
 -lighting
 
@@ -44,7 +44,7 @@ gameplay revolves around puzzle mechanics, similar to Portal.
 
 -level loading tile, exit tile
 
-# Creative TODO (non programming)
+### Creative TODO (non programming)
 
 -create textures
 
@@ -54,7 +54,7 @@ gameplay revolves around puzzle mechanics, similar to Portal.
 
 -create levels
 
-# Misc TODO
+### Misc TODO
 
 -homescreen
 
