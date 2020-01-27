@@ -12,4 +12,28 @@ gameplay revolves around puzzle mechanics, similar to Portal.
 -Once the game is in a finished state, simply run "FORCE.html"
 
 ## DEVELOPMENT:
--Coming Soon
+-TODO list:
+-cartographer compiles order of tiles
+-get rid of player tile[1][0] shortcut
+-implement textures & sounds
+-make versitile animation system
+-fix portal door entering
+-fix pushable pulling glitches
+FEATURES:
+-lighting
+-laser emmitter (n/w/s/e)
+-laser reciever (n/w/s/e)
+-laser redirector (n/w/s/e)
+-conveyor belt/rushing water (n/w/s/e)
+-restart button
+-level loading tile, exit tile
+CREATIVE todo (non programming)
+-create textures
+-create sounds
+-create music
+-create levels
+MISC
+-homescreen
+-level select
+-credits
+-trailer/showcase
