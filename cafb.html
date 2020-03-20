@@ -19,14 +19,17 @@
         <h1>Cartographer Asset File Builder</h1>
         <hr>
         <h4>Image Assets:</h4>
-        <button onclick="download_images()">Save</button><button>Load</button><br>
+        <button onclick="download_images()">Save</button><button>Load (doesn't work)</button><button onclick="generate_html()">Generate HTML</button><br>
+        <input id="pre" placholder="prefix"><input id="post" placholder="postfix">
         Name | Source<br>
+        
+        <br>
         <select id="image"></select>-<button onclick="upload_image()">+</button><button onclick="delete_image()">-</button><br>
         Library:<br>
         <div id="library"></div>
 
         <h4>Type Assets:</h4>
-        <button onclick="download_types()">Save</button><button>Load</button><br>
+        <button onclick="download_types()">Save</button><button>Load (doesn't work)</button><br>
         Type<br>
         <select id="type" onclick="compile_sub_list()"></select>-<button onclick="create_type()">+</button><button onclick="delete_type()">-</button><br>
         SubType<br>
@@ -42,7 +45,7 @@
             function upload_image() {
                 //get type name
                 var image_id = prompt("name:");
-                var image_dir = prompt("directory:");
+                var image_dir = document.getElementById("pre").value + image_id + document.getElementById("post").value;
                 //add image to array
                 image_array[image_array.length] = image_id;
                 dir_array[dir_array.length] = image_dir;
@@ -84,6 +87,14 @@
                 image_dl = "image_array = " + JSON.stringify(image_array) + "; dir_array = " + JSON.stringify(dir_array) + ";" + " load_assets_2();";
                 var file_name = prompt("file name:");
                 download(file_name + "_wad.js",image_dl);
+            }
+            
+            function generate_html() {
+                var strhtml = "";
+                for (i = 0; i < image_array.length; i++) {
+                    strhtml = strhtml + "<img src=" + dir_array[i] + " id=" + image_array[i] + ">";
+                }
+                alert(strhtml);
             }
         </script>
         <script>
